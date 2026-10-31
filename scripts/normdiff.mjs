@@ -6,6 +6,7 @@
 // a different chunk in B than in A is a difference. The only other normalizations, each for
 // nondeterminism two clean builds show:
 // - ISO timestamps and `"timestamp": N` in text files;
+// - the prerender time (`prerenderedAt`, epoch ms) in prerendered pages and payloads;
 // - hashes in the names of Nuxt's intermediate SSR files, in server region comments and source
 //   map `sources` only (SSR_INTERMEDIATE);
 // - Nitro's public-asset table: entries compared as a set keyed by URL, without `mtime` and `etag`
@@ -78,10 +79,13 @@ function canonicalStylesMap (s) {
 const read = (dir, p) => readFileSync(join(dir, p))
 // Build times: Nitro's `date` and the app manifest's `timestamp`, in their own files, and each
 // asset's `mtime` in Nitro's server assets table (the public asset table's goes in
-// canonicalAssets). A timestamp anywhere else is output and compared.
+// canonicalAssets), and Nuxt's prerender time. A timestamp anywhere else is output and compared.
+// Nuxt writes `prerenderedAt` into each prerendered page's payload: a devalue array element.
+const PRERENDERED = /^public\/(.*\/)?(_payload\.json|index\.html)$/
 const SERVER_ASSETS = /\/\/ #nitro\/virtual\/server-assets\nvar _assets = \{\n[\s\S]*?\n\};/
 const timeNorm = (s, p) => p === 'nitro.json' ? s.replace(/^(\s*"date":\s*)"[^"]*"/m, '$1""')
   : MANIFEST.test(p) ? s.replace(/^(\{"id":"[^"]*","timestamp":)\d+/, '$10')
+  : PRERENDERED.test(p) ? s.replace(/(?<=[,[])1[7-9]\d{11}(?=[,\]])/g, '0')
   : s.replace(SERVER_ASSETS, t => t.replace(/("mtime": )"[^"\n]*"/g, '$1""'))
 // Normalized text of a file after `rename` (a hash→hash map, identity when empty).
 // Names of Nuxt's intermediate SSR files (`.nuxt/vite/services/ssr/_nuxt/<name>-<hash>.js`) in

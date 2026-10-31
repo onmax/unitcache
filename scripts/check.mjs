@@ -60,7 +60,7 @@ const edits = {
       none,
       { name: 'template', apply: () => edit(F('app/components/AppHeader.vue'), "label: 'Docs'", "label: 'Docs (edited)'") },
       { name: 'page', apply: () => edit(F('app/pages/pricing.vue'), "label: 'Monthly'", "label: 'Monthly (edited)'") },
-      { name: 'tailwind-class', apply: () => edit(F('app/components/AppHeader.vue'), 'to="/"', 'to="/"\n        class="tracking-[0.37em]"') },
+      { name: 'tailwind-class', apply: () => edit(F('app/components/AppHeader.vue'), 'class="w-auto h-6 shrink-0"', 'class="w-auto h-6 shrink-0 tracking-[0.37em]"') },
       { name: 'css-file', apply: () => edit(F('app/assets/css/main.css'), '--color-green-50: #EFFDF5;', '--color-green-50: #EFFDF6;') },
       { name: 'og-image', apply: () => edit(F('app/components/OgImage/Saas.takumi.vue'), 'w-1.5 h-full', 'w-2 h-full') },
       { name: 'content-md', apply: () => edit(F('content/3.blog/2.pyrenees.md'), '## Introduction to the Pyrenean Wonderland', '## Introduction to the Pyrenean Wonderland (edited)') },

@@ -21,6 +21,7 @@ const base = {
   'public/_nuxt/deadline.js': 'export const deadline = "2026-01-01T00:00:00.000Z";\n',
   'public/data.json': '{"timestamp":123}',
   'public/builds/latest.json': '{"date":"2026-01-01","timestamp":1}',
+  'public/blog/_payload.json': '[{"data":1,"prerenderedAt":3},["ShallowReactive",2],{},1793484681134]',
   'server/_libs/h3.mjs': serverAssets('2026-10-30T05:55:05.240Z'),
   'server/_ssr/ssr.mjs': '// .nuxt/vite/services/ssr/_nuxt/rest~index-DVep9zxU.js\nexport const ssr = 1;\n',
   'server/_ssr/ssr.mjs.map': JSON.stringify({ version: 3, sources: ['../../.nuxt/vite/services/ssr/_nuxt/rest~index-DVep9zxU.js'], sourcesContent: ['x'], mappings: '' }),
@@ -56,6 +57,8 @@ const cases = [
   ['unchanged file still importing a renamed chunk', { ...Object.fromEntries(Object.entries(base).filter(([p]) => !p.includes('BBBBBBBB'))), 'public/_nuxt/DDDDDDDD.js': base['public/_nuxt/BBBBBBBB.js'] }, false],
   ['application builds file', { ...base, 'public/builds/latest.json': '{"date":"2027-01-01","timestamp":9}' }, false],
   ['manifest field other than the build time', { ...base, 'public/_nuxt/builds/latest.json': '{"id":"fixed-0002","timestamp":1793339628017}' }, false],
+  ['prerender time', { ...base, 'public/blog/_payload.json': base['public/blog/_payload.json'].replace('1793484681134', '1793484665505') }, true],
+  ['number in a payload', { ...base, 'public/blog/_payload.json': base['public/blog/_payload.json'].replace('{}', '{"n":4}') }, false],
   ['binary byte changed', { ...base, 'public/logo.bin': Buffer.from([0x81, 0x01]) }, false],
 ]
 const a = tree(base)

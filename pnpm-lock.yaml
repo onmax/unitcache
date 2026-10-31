@@ -172,7 +172,7 @@ overrides:
   '@nuxt/schema': npm:@nuxt/schema-nightly@5.0.0-2610291341-744179a
 
 patchedDependencies:
-  '@nuxt/vite-builder-nightly@5.0.0-2610291341-744179a': 83713fe94beeeabe2bd320c06160cc1992bc1039cee0735886ddd1d2ffb96434
+  '@nuxt/vite-builder-nightly@5.0.0-2610291341-744179a': a0933b8bd6a7f132a81d2b52b0d4a9f592364aa5cda5bcd4dcf7da3ef1ff85e2
   '@vitejs/plugin-vue@6.0.10': d700d6d04cdbc775daf1b54178f469cb91855d301463890bbdc0029000c6ec78
   nitro@3.0.260903-beta: 38fdbb59450800ac3cb5d7a672e82da24a7f7841731479297eb93534a6b5e937
   vite@8.3.5: b83beb3ac19dce61d8cf17884ba74639539031e08c2ff5cf43e1f05badb0d36f
@@ -6708,7 +6708,7 @@ snapshots:
       - vue
       - webpack
 
-  '@nuxt/vite-builder-nightly@5.0.0-2610291341-744179a(patch_hash=83713fe94beeeabe2bd320c06160cc1992bc1039cee0735886ddd1d2ffb96434)(a427746da9be7b4617171d3274f2dd90)':
+  '@nuxt/vite-builder-nightly@5.0.0-2610291341-744179a(patch_hash=a0933b8bd6a7f132a81d2b52b0d4a9f592364aa5cda5bcd4dcf7da3ef1ff85e2)(a427746da9be7b4617171d3274f2dd90)':
     dependencies:
       '@nuxt/kit': '@nuxt/kit-nightly@5.0.0-2610291341-744179a(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.153.0)(rolldown@vendor+rolldown)(unplugin@3.7.0(esbuild@0.27.7)(rolldown@vendor+rolldown)(vite@8.3.5(patch_hash=b83beb3ac19dce61d8cf17884ba74639539031e08c2ff5cf43e1f05badb0d36f)(esbuild@0.27.7)(jiti@2.7.0)(yaml@2.9.1)))'
       '@vitejs/plugin-vue': 6.0.10(patch_hash=d700d6d04cdbc775daf1b54178f469cb91855d301463890bbdc0029000c6ec78)(vite@8.3.5(patch_hash=b83beb3ac19dce61d8cf17884ba74639539031e08c2ff5cf43e1f05badb0d36f)(esbuild@0.27.7)(jiti@2.7.0)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))
@@ -9947,7 +9947,7 @@ snapshots:
       '@nuxt/nitro-server': '@nuxt/nitro-server-nightly@5.0.0-2610291341-744179a(@oxc-project/types@0.156.0)(acorn@8.19.0)(confbox@0.3.2)(dotenv@17.4.2)(esbuild@0.27.7)(giget@3.3.1)(jiti@2.7.0)(lightningcss@1.33.0)(mlly@1.8.2)(nuxt-nightly@5.0.0-2610291341-744179a(@oxc-project/types@0.156.0)(@vue/compiler-sfc@3.5.44)(acorn@8.19.0)(confbox@0.3.2)(dotenv@17.4.2)(esbuild@0.27.7)(eslint@10.14.0(jiti@2.7.0)(supports-color@7.2.0))(giget@3.3.1)(jiti@2.7.0)(lightningcss@1.33.0)(mlly@1.8.2)(nuxt-nightly@5.0.0-2610291341-744179a)(optionator@0.9.4)(oxc-parser@0.153.0)(rolldown@vendor+rolldown)(typescript@6.0.3)(vite@8.3.5(patch_hash=b83beb3ac19dce61d8cf17884ba74639539031e08c2ff5cf43e1f05badb0d36f)(esbuild@0.27.7)(jiti@2.7.0)(yaml@2.9.1))(vue-tsc@3.3.14(typescript@6.0.3))(yaml@2.9.1))(oxc-parser@0.153.0)(typescript@6.0.3)(vite@8.3.5(patch_hash=b83beb3ac19dce61d8cf17884ba74639539031e08c2ff5cf43e1f05badb0d36f)(esbuild@0.27.7)(jiti@2.7.0)(yaml@2.9.1))'
       '@nuxt/schema': '@nuxt/schema-nightly@5.0.0-2610291341-744179a'
       '@nuxt/telemetry': 2.9.1(@nuxt/kit-nightly@5.0.0-2610291341-744179a(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.153.0)(rolldown@vendor+rolldown)(unplugin@3.7.0(esbuild@0.27.7)(rolldown@vendor+rolldown)(vite@8.3.5(patch_hash=b83beb3ac19dce61d8cf17884ba74639539031e08c2ff5cf43e1f05badb0d36f)(esbuild@0.27.7)(jiti@2.7.0)(yaml@2.9.1))))
-      '@nuxt/vite-builder': '@nuxt/vite-builder-nightly@5.0.0-2610291341-744179a(patch_hash=83713fe94beeeabe2bd320c06160cc1992bc1039cee0735886ddd1d2ffb96434)(a427746da9be7b4617171d3274f2dd90)'
+      '@nuxt/vite-builder': '@nuxt/vite-builder-nightly@5.0.0-2610291341-744179a(patch_hash=a0933b8bd6a7f132a81d2b52b0d4a9f592364aa5cda5bcd4dcf7da3ef1ff85e2)(a427746da9be7b4617171d3274f2dd90)'
       '@nuxt/vite-server': '@nuxt/vite-server-nightly@5.0.0-2610291341-744179a(fcd180a473fae000e134cb86807c8655)'
       '@unhead/vue': 3.4.3(@oxc-project/types@0.156.0)(esbuild@0.27.7)(lightningcss@1.33.0)(oxc-parser@0.153.0)(rolldown@vendor+rolldown)(vite@8.3.5(patch_hash=b83beb3ac19dce61d8cf17884ba74639539031e08c2ff5cf43e1f05badb0d36f)(esbuild@0.27.7)(jiti@2.7.0)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))
       '@vue/shared': 3.5.44

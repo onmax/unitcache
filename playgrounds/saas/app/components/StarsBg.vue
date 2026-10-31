@@ -21,13 +21,16 @@ const props = withDefaults(defineProps<{
 })
 
 // Generate random star positions and sizes
+// (lab change: a seeded generator instead of Math.random, so two builds prerender the same page)
 const generateStars = (count: number): Star[] => {
+  let seed = count
+  const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647
   return Array.from({ length: count }, () => ({
-    x: Math.floor(Math.random() * 2000),
-    y: Math.floor(Math.random() * 2000),
+    x: Math.floor(random() * 2000),
+    y: Math.floor(random() * 2000),
     size: typeof props.size === 'number'
       ? props.size
-      : Math.random() * (props.size.max - props.size.min) + props.size.min
+      : random() * (props.size.max - props.size.min) + props.size.min
   }))
 }
 

@@ -1,5 +1,5 @@
 diff --git a/dist/index.mjs b/dist/index.mjs
-index d4ceef6..1d299f2 100644
+index d4ceef6facc7c40382afbd5b80bdedef1d3b2dea..1f8acc24f393fa1abe29157751c38a48ee414b92 100644
 --- a/dist/index.mjs
 +++ b/dist/index.mjs
 @@ -1,4 +1,5 @@
@@ -105,3 +105,27 @@ index d4ceef6..1d299f2 100644
  			const s = rolldownString(code, chunk.fileName);
  			s.replaceAll(filename, "#entry");
  			return generateTransform(s, chunk.fileName);
+@@ -3122,9 +3152,21 @@ function ResolveExternalsPlugin(nuxt) {
+ 			return {
+ 				name: "nuxt:resolve-externals:external",
+ 				resolveId: {
+-					filter: { id: BARE_ID_RE },
++					filter: { id: [BARE_ID_RE, /\/node_modules\//] },
+ 					async handler(id, importer) {
+-						if (!importer || isBuiltin(id) || deduped.has(pkgName(id)) || localImporterRE?.test(importer)) return;
++						if (!importer || isBuiltin(id) || localImporterRE?.test(importer)) return;
++						// A template can import a package's entry by its absolute path (`paths.mjs` imports
++						// ufo so). Resolve it as the bare import would be: otherwise the SSR bundle keeps
++						// whichever of the two resolutions of the same file comes first.
++						if (!BARE_ID_RE.test(id)) {
++							const { dir, name } = parseNodeModulePath(id);
++							if (!dir || !name || deduped.has(name)) return;
++							const res = await this.resolve?.(name, importer, { skipSelf: true });
++							if (!res || res.external !== true || res.id !== name) return;
++							const entry = resolveModulePath(name, { try: true, from: `${dir}${name}/`, conditions, extensions: nuxt.options.extensions });
++							return entry === id ? { ...res, id, external: "absolute" } : void 0;
++						}
++						if (deduped.has(pkgName(id))) return;
+ 						const res = await this.resolve?.(id, importer, { skipSelf: true });
+ 						if (!res || res.external !== true || res.id !== id) return res;
+ 						const { dir, name } = parseNodeModulePath(importer);
