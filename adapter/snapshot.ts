@@ -218,7 +218,12 @@ export function snapshot () {
       // Nitro looks virtual modules up by id; modules that scan layers in parallel (mcp-toolkit)
       // add them in a different order each run.
       const nitro = o.nitro.virtual ? { ...o.nitro, virtual: Object.fromEntries(Object.entries(o.nitro.virtual).sort(([x], [y]) => (x < y ? -1 : 1))) } : o.nitro
-      const resolved = sha(stableConfig({ nitro, runtimeConfig: o.runtimeConfig, appConfig: o.appConfig, alias: o.alias, build: o.build }, new Set(['_layers'])))
+      // Templates reach the build as files and virtual modules, which the cache tracks itself; their
+      // options can hold an app's data (Nuxt Content passes its database dump).
+      const build = { ...o.build, templates: undefined }
+      const resolvedInputs = stableConfig({ nitro, runtimeConfig: o.runtimeConfig, appConfig: o.appConfig, alias: o.alias, build }, new Set(['_layers']))
+      if (process.env.EXP_RD_DEBUG_KEY) writeFileSync(`${process.env.EXP_RD_DEBUG_KEY}.${process.pid}.resolved.json`, resolvedInputs)
+      const resolved = sha(resolvedInputs)
       const keyInputs = stable({ vue, experimental, features, future, optimization, imports, componentOptions, sourcemap, ssr, app: { baseURL: app.baseURL, buildAssetsDir: app.buildAssetsDir }, css, buildId, layerConfigs, locks, env, resolved })
       if (process.env.EXP_RD_DEBUG_KEY) writeFileSync(`${process.env.EXP_RD_DEBUG_KEY}.${process.pid}.json`, keyInputs)
       const key = sha(keyInputs).slice(0, 16)
