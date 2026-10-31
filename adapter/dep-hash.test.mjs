@@ -1,10 +1,10 @@
-// node scripts/dep-hash.test.mjs checks that the whole-build skip sees every change to a dependency Rolldown
+// node adapter/dep-hash.test.mjs checks that the whole-build skip sees every change to a dependency Rolldown
 // lists in build-deps.json, in the encodings it writes.
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { depHash, stripJsonc, TSCONFIG_DEP, tsconfigFiles } from '../adapter/dep-hash.mjs'
+import { depHash, stripJsonc, TSCONFIG_DEP, tsconfigFiles } from './dep-hash.mjs'
 
 const S = join(import.meta.dirname, '..')
 mkdirSync(join(S, 'tmp'), { recursive: true })

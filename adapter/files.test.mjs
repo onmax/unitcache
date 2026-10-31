@@ -1,9 +1,9 @@
-// node scripts/files.test.mjs checks that the adapter's per-file records (adapter/files.mjs) see every change
+// node adapter/files.test.mjs checks that the adapter's per-file records (adapter/files.mjs) see every change
 // a whole-content fingerprint saw, without reading every file when something changed.
 import assert from 'node:assert/strict'
 import { mkdirSync, mkdtempSync, rmSync, statSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { digestOf, makeRecord, recordMatches, sameScan, scan } from '../adapter/files.mjs'
+import { digestOf, makeRecord, recordMatches, sameScan, scan } from './files.mjs'
 
 const S = join(import.meta.dirname, '..')
 mkdirSync(join(S, 'tmp'), { recursive: true })
