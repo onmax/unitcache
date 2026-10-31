@@ -215,7 +215,10 @@ export function snapshot () {
       const { vue, experimental, features, future, optimization, imports, components: componentOptions, sourcemap, ssr, app, css, buildId } = o
       // Resolved options that config files compute (often from env vars) and that reach code
       // without a file Rolldown can hash: Nitro options, runtime and app config.
-      const resolved = sha(stableConfig({ nitro: o.nitro, runtimeConfig: o.runtimeConfig, appConfig: o.appConfig, alias: o.alias, build: o.build }, new Set(['_layers'])))
+      // Nitro looks virtual modules up by id; modules that scan layers in parallel (mcp-toolkit)
+      // add them in a different order each run.
+      const nitro = o.nitro.virtual ? { ...o.nitro, virtual: Object.fromEntries(Object.entries(o.nitro.virtual).sort(([x], [y]) => (x < y ? -1 : 1))) } : o.nitro
+      const resolved = sha(stableConfig({ nitro, runtimeConfig: o.runtimeConfig, appConfig: o.appConfig, alias: o.alias, build: o.build }, new Set(['_layers'])))
       const keyInputs = stable({ vue, experimental, features, future, optimization, imports, componentOptions, sourcemap, ssr, app: { baseURL: app.baseURL, buildAssetsDir: app.buildAssetsDir }, css, buildId, layerConfigs, locks, env, resolved })
       if (process.env.EXP_RD_DEBUG_KEY) writeFileSync(`${process.env.EXP_RD_DEBUG_KEY}.${process.pid}.json`, keyInputs)
       const key = sha(keyInputs).slice(0, 16)
