@@ -175,6 +175,7 @@ patchedDependencies:
   '@nuxt/vite-builder-nightly@5.0.0-2610291341-744179a': a0933b8bd6a7f132a81d2b52b0d4a9f592364aa5cda5bcd4dcf7da3ef1ff85e2
   '@vitejs/plugin-vue@6.0.10': d700d6d04cdbc775daf1b54178f469cb91855d301463890bbdc0029000c6ec78
   nitro@3.0.260903-beta: 38fdbb59450800ac3cb5d7a672e82da24a7f7841731479297eb93534a6b5e937
+  nuxt-og-image@7.0.7: ff74a8d9699fe27cc97ab130d6a2430e5ad737c4bd7386e97d97b064c0b6813d
   vite@8.3.5: b83beb3ac19dce61d8cf17884ba74639539031e08c2ff5cf43e1f05badb0d36f
 
 importers:
@@ -291,7 +292,7 @@ importers:
         version: nuxt-nightly@5.0.0-2610291341-744179a(@oxc-project/types@0.156.0)(@vue/compiler-sfc@3.5.44)(acorn@8.19.0)(confbox@0.3.2)(dotenv@17.4.2)(esbuild@0.27.7)(eslint@10.14.0(jiti@2.7.0)(supports-color@7.2.0))(giget@3.3.1)(jiti@2.7.0)(lightningcss@1.33.0)(mlly@1.8.2)(nuxt-nightly@5.0.0-2610291341-744179a)(optionator@0.9.4)(oxc-parser@0.153.0)(rolldown@vendor+rolldown)(typescript@6.0.3)(vite@8.3.5(patch_hash=b83beb3ac19dce61d8cf17884ba74639539031e08c2ff5cf43e1f05badb0d36f)(esbuild@0.27.7)(jiti@2.7.0)(yaml@2.9.1))(vue-tsc@3.3.14(typescript@6.0.3))(yaml@2.9.1)
       nuxt-og-image:
         specifier: ^7.0.7
-        version: 7.0.7(d4d686080d8b0c927b35887a1ee7b019)
+        version: 7.0.7(patch_hash=ff74a8d9699fe27cc97ab130d6a2430e5ad737c4bd7386e97d97b064c0b6813d)(d4d686080d8b0c927b35887a1ee7b019)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -10058,7 +10059,7 @@ snapshots:
       - webpack
       - yaml
 
-  nuxt-og-image@7.0.7(d4d686080d8b0c927b35887a1ee7b019):
+  nuxt-og-image@7.0.7(patch_hash=ff74a8d9699fe27cc97ab130d6a2430e5ad737c4bd7386e97d97b064c0b6813d)(d4d686080d8b0c927b35887a1ee7b019):
     dependencies:
       '@clack/prompts': 1.8.1
       '@nuxt/kit': '@nuxt/kit-nightly@5.0.0-2610291341-744179a(confbox@0.3.2)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magic-string@1.4.5)(mlly@1.8.2)(oxc-parser@0.153.0)(rolldown@vendor+rolldown)(unplugin@3.7.0(esbuild@0.27.7)(rolldown@vendor+rolldown)(vite@8.3.5(patch_hash=b83beb3ac19dce61d8cf17884ba74639539031e08c2ff5cf43e1f05badb0d36f)(esbuild@0.27.7)(jiti@2.7.0)(yaml@2.9.1)))'

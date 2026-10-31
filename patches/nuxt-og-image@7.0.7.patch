@@ -1,0 +1,48 @@
+diff --git a/dist/shared/nuxt-og-image.CS4ArVpM.mjs b/dist/shared/nuxt-og-image.CS4ArVpM.mjs
+index 5a750954976327a03bce3530e97bfd089b1bbf8d..a9672f5c253bde82ce1f484a079e9552cca3d767 100644
+--- a/dist/shared/nuxt-og-image.CS4ArVpM.mjs
++++ b/dist/shared/nuxt-og-image.CS4ArVpM.mjs
+@@ -4142,6 +4142,9 @@ const AssetTransformPlugin = createUnplugin((options) => {
+             logger.warn(`[nuxt-og-image] ${componentName}: CSS template transform failed, using original template`, err.message);
+           }
+         }
++        // The styles above also come from the app config and the Tailwind CSS file.
++        for (const file of options.cssInputs?.() ?? [])
++          this.addWatchFile(file);
+         if (template.includes("var(")) {
+           const vars = options.cssProvider?.getVars ? await options.cssProvider.getVars(rootAttrs) : /* @__PURE__ */ new Map();
+           RE_INLINE_STYLE.lastIndex = 0;
+@@ -5475,6 +5478,7 @@ Or pin to a specific version in package.json:
+     }
+     let cachedNuxtUiColors;
+     let userConfigPaths = [];
++    const cssInputs = /* @__PURE__ */ new Set();
+     nuxt.hook("app:resolve", (app) => {
+       userConfigPaths = [...app.configs];
+     });
+@@ -5515,7 +5519,7 @@ Or pin to a specific version in package.json:
+         async resolveCssPath() {
+           const aliasPath = nuxt.options.alias["#tailwindcss"];
+           if (aliasPath && existsSync(aliasPath))
+-            return aliasPath;
++            return cssInputs.add(aliasPath), aliasPath;
+           for (const cssEntry of nuxt.options.css) {
+             const cssPath = typeof cssEntry === "string" ? cssEntry : cssEntry?.src;
+             if (!cssPath || !cssPath.endsWith(".css"))
+@@ -5527,7 +5531,7 @@ Or pin to a specific version in package.json:
+               continue;
+             const content = await readFile(resolved, "utf-8");
+             if (content.includes('@import "tailwindcss"') || content.includes("@import 'tailwindcss'"))
+-              return resolved;
++              return cssInputs.add(resolved), resolved;
+           }
+         },
+         loadNuxtUiColors
+@@ -5585,6 +5589,7 @@ Or pin to a specific version in package.json:
+         srcDir: nuxt.options.srcDir,
+         publicDir: isAbsolute(nuxt.options.dir.public) ? nuxt.options.dir.public : join(nuxt.options.srcDir, nuxt.options.dir.public || "public"),
+         cssProvider: cssProvider$1,
++        cssInputs: () => [...userConfigPaths, ...cssInputs],
+         beforeCssResolve: flushCssDirtyState,
+         onNestedTransform: (filePath) => ogImageTransformedFiles.add(filePath),
+         onFontRequirements(id, reqs) {
