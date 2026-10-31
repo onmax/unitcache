@@ -1,9 +1,0 @@
-export function useSettingsState2 (initial = 2) {
-  const count = useState<number>('settings-state-2', () => initial)
-  const items = useState<{ id: string, status: string, value: number }[]>('settings-items-2', () => [])
-  const grouped = computed(() => groupSettings10(items.value))
-  const label = computed(() => formatSettings10(count.value, { precision: 1 }))
-  function bump (by = 1) { count.value += by }
-  function reset () { count.value = initial; items.value = [] }
-  return { count, items, grouped, label, bump, reset }
-}

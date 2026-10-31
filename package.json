@@ -7,6 +7,6 @@
     "use-rolldown": "node scripts/use-rolldown.mjs",
     "check": "node scripts/check.mjs",
     "bench": "node scripts/bench.mjs",
-    "test": "node adapter/dep-hash.test.mjs && node adapter/files.test.mjs && node scripts/normdiff.test.mjs && pnpm -r --filter ./packages/* test"
+    "test": "node adapter/dep-hash.test.mjs && node adapter/files.test.mjs && node scripts/normdiff.test.mjs"
   }
 }

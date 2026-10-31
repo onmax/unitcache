@@ -1,9 +1,5 @@
 packages:
-  - packages/*
-  - playgrounds/big3/app
-  - playgrounds/layers26/app
-  - playgrounds/vite-app
-  - playgrounds/vite-app/packages/*
+  - playgrounds/*
   - vendor/rolldown-stock
 
 # Every `rolldown` in the stack resolves through vendor/rolldown, a symlink that
@@ -12,6 +8,11 @@ packages:
 overrides:
   rolldown: link:./vendor/rolldown
   rolldown-stock>rolldown: 1.2.16
+  vite: 8.3.5
+  nitro: 3.0.260903-beta
+  nuxt: npm:nuxt-nightly@5.0.0-2610291341-744179a
+  '@nuxt/kit': npm:@nuxt/kit-nightly@5.0.0-2610291341-744179a
+  '@nuxt/schema': npm:@nuxt/schema-nightly@5.0.0-2610291341-744179a
 
 # The changes Vite, plugin-vue, Nuxt and Nitro need, one patch per package. README.md lists each
 # one; scripts/patches.mjs takes them out of node_modules for the "today" baseline and puts them back.
@@ -28,3 +29,8 @@ minimumReleaseAgeExclude:
   - '@nuxt/vite-builder-nightly@5.0.0-2610291341-744179a'
   - '@nuxt/vite-server-nightly@5.0.0-2610291341-744179a'
   - nuxt-nightly@5.0.0-2610291341-744179a
+
+allowBuilds:
+  esbuild: false
+  unrs-resolver: false
+  vue-demi: false

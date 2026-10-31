@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 // Interleaved timing runs of the same app and changes under several configurations.
-// Usage: node scripts/bench.mjs --app big3 [--configs today,ours] [--rounds 5] [--tag name]
+// Usage: node scripts/bench.mjs --app dashboard [--configs today,ours] [--rounds 5] [--tag name]
 //
 //   today       stock Rolldown, stock Vite/Nuxt, `experimental.buildCache` with a warm node_modules/.cache
 //   ours        the fork's Rolldown with the module snapshot and the patches in patches/, each build in a new
 //               process from a fresh copy of the base snapshot on disk
 //
-// Scenarios per round: `nochange` (rebuild of the committed tree) and `layer` (a one-layer change
-// with text unique to the round, so no cache saw it before). Times are taken inside LAB_RUNNER
+// Scenarios per round: `nochange` (rebuild of the committed tree) and `edit` (one component
+// edited with text unique to the round, so no cache saw it before). Times are taken inside LAB_RUNNER
 // when it is set (see lab.mjs), so they exclude queueing. The order of configurations rotates every round. `wall` ends when
 // the build process exits; `saved` adds the wait for ours' background snapshot save (what CI waits
 // for before uploading the cache); `prep` is the time to copy the base snapshot before the build
@@ -18,24 +18,22 @@ import { app as getApp, build, median, restore, S, sh, useRolldown } from './lab
 
 const args = process.argv.slice(2)
 const opt = (n, d) => { const i = args.indexOf(`--${n}`); return i < 0 ? d : args[i + 1] }
-const a = getApp(opt('app', 'big3'))
+const a = getApp(opt('app', 'dashboard'))
 const configs = opt('configs', 'today,ours').split(',')
 const rounds = Number(opt('rounds', '5'))
 const tag = opt('tag', `${a.name}-${new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-')}`)
 const OUT = join(S, 'results/bench', tag)
 mkdirSync(OUT, { recursive: true })
 
-const layerFile = {
-  big3: ['layers/alarms/app/components/Alarms/AlarmsWidget7.vue', '<h3>{{ title }}'],
-  layers26: ['layers/alarms/app/components/Alarms/AlarmsWidget7.vue', '<h3>{{ title }}'],
-  vite: ['packages/alarms/src/components/AlarmsWidget0.vue', '<h3>{{ title }}'],
+const editFile = {
+  dashboard: ['app/components/home/HomeStats.vue', '{{ stat.value }}', tag => `{{ stat.value }} ${tag}`],
+  saas: ['app/components/AppHeader.vue', "label: 'Docs'", tag => `label: 'Docs ${tag}'`],
 }[a.name]
-function layerEdit (round, config) {
-  if (!layerFile) throw new Error(`no layer edit defined for ${a.name}`)
-  const file = join(a.rootAbs, layerFile[0])
-  const s = readFileSync(file, 'utf8')
-  if (!s.includes(layerFile[1])) throw new Error('edit anchor missing')
-  writeFileSync(file, s.replace(layerFile[1], `${layerFile[1]}<span>round ${round} ${config}</span>`))
+function editOne (round, config) {
+  const [file, anchor, to] = editFile
+  const s = readFileSync(join(a.rootAbs, file), 'utf8')
+  if (!s.includes(anchor)) throw new Error('edit anchor missing')
+  writeFileSync(join(a.rootAbs, file), s.replace(anchor, to(`round ${round} ${config}`)))
 }
 
 const CACHE = join(S, 'cache', a.name)
@@ -79,9 +77,9 @@ for (let round = 1; round <= rounds; round++) {
   const order = configs.map((_, i) => configs[(i + round) % configs.length])
   for (const config of order) {
     use(config)
-    for (const scenario of ['nochange', 'layer']) {
+    for (const scenario of ['nochange', 'edit']) {
       restore(a)
-      if (scenario === 'layer') layerEdit(round, config)
+      if (scenario === 'edit') editOne(round, config)
       prep = 0
       const b = build(a, `r${round}-${config}-${scenario}`, OUT, setup[config].env(false))
       row(round, config, scenario, b)

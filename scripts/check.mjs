@@ -2,17 +2,17 @@
 // The check: for each edit below, build the edited tree incrementally from the base snapshot and
 // clean, and compare the normalized outputs and generated types. Exits 1 on any mismatch.
 //
-// Usage: node scripts/check.mjs --app big3 [--only a,b] [--rebase] [--tag name]
+// Usage: node scripts/check.mjs --app dashboard [--only a,b] [--rebase] [--tag name]
 //   --rebase  rebuild the base snapshot from the committed tree
 // The playground's sources must be committed: the runner restores them from git between edits.
 import { spawnSync } from 'node:child_process'
-import { appendFileSync, copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { appendFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { app as getApp, build, median, restore, rolldownArtifactHash, S, sh, treeHash, useRolldown } from './lab.mjs'
 
 const args = process.argv.slice(2)
 const opt = (name, def) => { const i = args.indexOf(`--${name}`); return i < 0 ? def : args[i + 1] }
-const a = getApp(opt('app', 'big3'))
+const a = getApp(opt('app', 'dashboard'))
 const only = opt('only')?.split(',')
 const tag = opt('tag', `${a.name}-${new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-')}`)
 const BASE = join(S, 'cache', a.name, 'base'), RUN = join(S, 'cache', a.name, 'run')
@@ -25,59 +25,52 @@ function edit (file, from, to) {
   writeFileSync(file, s.replace(from, to))
 }
 
-// Each edit changes the tree in place. `units` says what it touches: one layer, `shared` (used by
-// every layer), or `all` (config or dependencies).
-function layerApp () {
-  const L = (...p) => join(a.rootAbs, 'layers', ...p)
-  const W7 = L('alarms/app/components/Alarms/AlarmsWidget7.vue')
-  return [
-    { name: 'none', units: '', apply () {} },
-    { name: 'template', units: 'alarms', apply: () => edit(W7, '<h3>{{ title }}', '<h3>Edited {{ title }}') },
-    { name: 'script', units: 'alarms', apply: () => edit(W7, 'bump()', 'bump(2)') },
-    { name: 'style', units: 'alarms', apply: () => edit(W7, /padding: (\d+)px/, (_, n) => `padding: ${Number(n) + 1}px`) },
-    { name: 'layer-composable', units: 'alarms', apply: () => edit(L('alarms/app/composables/useAlarmsState2.ts'), 'count.value += by', 'count.value += by * 2') },
-    { name: 'layer-types', units: 'alarms', apply: () => edit(L('alarms/app/types.ts'), '  highlight?: string', '  highlight?: string\n  edited?: boolean') },
-    { name: 'page', units: 'kpis', apply: () => edit(L('kpis/app/pages/kpis/kpis-p2.vue'), 'page 2 (', 'page 2 edited (') },
-    { name: 'server-route', units: 'alarms', apply: () => edit(L('alarms/server/api/alarms/alarms-r3.get.ts'), 'Math.min(100,', 'Math.min(200,') },
-    { name: 'add-composable', units: 'alarms', apply: () => writeFileSync(L('alarms/app/composables/useAlarmsExtra.ts'), 'export function useAlarmsExtra () { return 42 }\n') },
-    { name: 'remove-page', units: 'alarms', apply: () => rmSync(L('alarms/app/pages/alarms/alarms-p10.vue')) },
-    // A layer stops or starts using another layer's component: changes which exports of the
-    // other layer are rendered (tree shaking, scoped CSS via cssScopeTo).
-    { name: 'remove-usage', units: 'alarms', apply: () => edit(W7, / *<Core\w+ title="\w+" :items="\[\]" \/>\n/, '') },
-    { name: 'add-usage', units: 'alarms', apply: () => edit(W7, '    </footer>', '      <UiTabs title="UiTabs" :items="[]" />\n    </footer>') },
-    { name: 'shared-composable', units: 'shared', apply: () => edit(L('core/app/composables/useCoreState0.ts'), 'count.value += by', 'count.value += by * 2') },
-    { name: 'shared-component', units: 'shared', apply: () => edit(L('ui/app/components/Ui/UiButton.vue'), '<h3>{{ title }}', '<h3>UI {{ title }}') },
-    {
-      name: 'app-override', units: 'shared', apply () {
-        const dir = join(a.rootAbs, 'app/app/components')
-        mkdirSync(dir, { recursive: true })
-        copyFileSync(L('ui/app/components/Ui/UiButton.vue'), join(dir, 'UiButton.vue'))
-        edit(join(dir, 'UiButton.vue'), '<h3>', '<h3 class="app-override">')
-        edit(join(dir, 'UiButton.vue'), "'../../types'", "'../../../layers/ui/app/types'")
+// Each edit changes the app's tree in place, one kind of change per case.
+const none = { name: 'none', apply () {} }
+const dependency = { name: 'dependency', apply: () => appendFileSync(a.modulesYamlAbs, '\n# dependency bump\n') }
+const edits = {
+  dashboard (F) {
+    const stats = F('app/components/home/HomeStats.vue')
+    return [
+      none,
+      { name: 'template', apply: () => edit(stats, '{{ stat.value }}', '{{ stat.value }} edited') },
+      { name: 'script', apply: () => edit(stats, 'maximumFractionDigits: 0', 'maximumFractionDigits: 1') },
+      // A utility class no file used before: Tailwind's CSS, which reads every template, changes.
+      { name: 'tailwind-class', apply: () => edit(stats, 'class="text-xs"', 'class="text-xs tracking-[0.37em]"') },
+      { name: 'css-file', apply: () => edit(F('app/assets/css/main.css'), '--color-green-50: #EFFDF5;', '--color-green-50: #EFFDF6;') },
+      { name: 'composable', apply: () => edit(F('app/composables/useDashboard.ts'), "'g-h': () => router.push('/')", "'g-h': () => router.push('/?home')") },
+      { name: 'util', apply: () => edit(F('app/utils/index.ts'), 'array[Math.floor(Math.random() * array.length)]!', 'array[Math.floor(Math.random() * array.length) % array.length]!') },
+      { name: 'types', apply: () => edit(F('app/types/index.d.ts'), '  location: string', '  location: string\n  edited?: boolean') },
+      { name: 'page', apply: () => edit(F('app/pages/inbox.vue'), 'title="Inbox"', 'title="Inbox (edited)"') },
+      { name: 'server-route', apply: () => edit(F('server/api/customers.ts'), "location: 'New York, USA'", "location: 'Boston, USA'") },
+      {
+        name: 'add-component', apply () {
+          writeFileSync(F('app/components/home/HomeNote.vue'), '<template>\n  <p>note</p>\n</template>\n')
+          edit(stats, '  </UPageGrid>', '    <HomeNote />\n  </UPageGrid>')
+        },
       },
-    },
-    // An env var no key prefix names, read by the config into `vite.define` (app.vue prints it).
-    { name: 'env-define', units: 'all', env: { DEPLOY_FLAVOR: 'blue' }, apply () {} },
-    { name: 'layer-config', units: 'all', apply: () => edit(L('alarms/nuxt.config.ts'), "$meta: { name: 'alarms' }", "$meta: { name: 'alarms' }, runtimeConfig: { public: { alarmsFlag: true } }") },
-    { name: 'dependency', units: 'all', apply: () => appendFileSync(a.modulesYamlAbs, '\n# dependency bump\n') },
-  ]
-}
-
-// Plain Vite app: units are workspace packages (packages/<unit>).
-function viteApp () {
-  const U = (...p) => join(a.rootAbs, ...p)
-  const w0 = U('packages/alarms/src/components/AlarmsWidget0.vue')
-  return [
-    { name: 'none', units: '', apply () {} },
-    { name: 'template', units: 'alarms', apply: () => edit(w0, '<h3>{{ title }}', '<h3>Edited {{ title }}') },
-    { name: 'style', units: 'alarms', apply: () => edit(w0, 'padding: 15px', 'padding: 16px') },
-    { name: 'css-file', units: 'alarms', apply: () => edit(U('packages/alarms/src/styles/alarms-theme.css'), '--alarms-gap: 14px', '--alarms-gap: 15px') },
-    { name: 'layer-composable', units: 'alarms', apply: () => edit(U('packages/alarms/src/composables/useAlarmsState0.ts'), 'count0.value += by', 'count0.value += by * 2') },
-    { name: 'layer-types', units: 'alarms', apply: () => edit(U('packages/alarms/src/types/alarms-types.ts'), '  updatedAt?: string', '  updatedAt?: string\n  edited?: boolean') },
-    { name: 'page', units: 'kpis', apply: () => edit(U('packages/kpis/src/pages/KpisHome.vue'), '<h1>Kpis page 0', '<h1>Kpis page 0 edited') },
-    { name: 'shared-component', units: 'shared', apply: () => edit(U('packages/ui/src/components/UiButton.vue'), '<h3>{{ title }}', '<h3>UI {{ title }}') },
-    { name: 'dependency', units: 'all', apply: () => appendFileSync(a.modulesYamlAbs, '\n# dependency bump\n') },
-  ]
+      { name: 'remove-page', apply: () => rmSync(F('app/pages/settings/security.vue')) },
+      { name: 'app-config', apply: () => edit(F('app/app.config.ts'), "primary: 'green'", "primary: 'blue'") },
+      { name: 'nuxt-config', apply: () => edit(F('nuxt.config.ts'), 'cors: true', "cors: true,\n      headers: { 'x-edited': '1' }") },
+      dependency,
+    ]
+  },
+  saas (F) {
+    return [
+      none,
+      { name: 'template', apply: () => edit(F('app/components/AppHeader.vue'), "label: 'Docs'", "label: 'Docs (edited)'") },
+      { name: 'page', apply: () => edit(F('app/pages/pricing.vue'), "label: 'Monthly'", "label: 'Monthly (edited)'") },
+      { name: 'tailwind-class', apply: () => edit(F('app/components/AppHeader.vue'), 'to="/"', 'to="/"\n        class="tracking-[0.37em]"') },
+      { name: 'css-file', apply: () => edit(F('app/assets/css/main.css'), '--color-green-50: #EFFDF5;', '--color-green-50: #EFFDF6;') },
+      { name: 'og-image', apply: () => edit(F('app/components/OgImage/Saas.takumi.vue'), 'w-1.5 h-full', 'w-2 h-full') },
+      { name: 'content-md', apply: () => edit(F('content/3.blog/2.pyrenees.md'), '## Introduction to the Pyrenean Wonderland', '## Introduction to the Pyrenean Wonderland (edited)') },
+      { name: 'content-yml', apply: () => edit(F('content/2.pricing.yml'), 'title: A plan for every need', 'title: A plan for every need (edited)') },
+      { name: 'content-add', apply: () => writeFileSync(F('content/4.changelog/11.edited.md'), '---\ntitle: "Edited"\ndescription: "A changelog entry added by the check."\ndate: "2025-05-01"\n---\n\nA new entry.\n') },
+      { name: 'app-config', apply: () => edit(F('app/app.config.ts'), "primary: 'blue'", "primary: 'green'") },
+      { name: 'nuxt-config', apply: () => edit(F('nuxt.config.ts'), "'/docs': { redirect: '/docs/getting-started', prerender: false }", "'/docs': { redirect: '/docs/getting-started', prerender: false },\n    '/pricing': { headers: { 'x-edited': '1' } }") },
+      dependency,
+    ]
+  },
 }
 
 useRolldown('fork')
@@ -90,7 +83,7 @@ const TYPE_FILES = /^(tsconfig[\w.]*\.json|[\w.]+\.d\.ts)$/
 function copyTypes (dest) {
   const dir = join(a.cwdAbs, '.nuxt')
   rmSync(dest, { recursive: true, force: true })
-  if (a.kind !== 'nuxt' || !existsSync(dir)) return
+  if (!existsSync(dir)) return
   mkdirSync(dest, { recursive: true })
   for (const f of readdirSync(dir)) if (TYPE_FILES.test(f) || f === 'types') cpSync(join(dir, f), join(dest, f), { recursive: true })
 }
@@ -127,9 +120,9 @@ if (args.includes('--rebase') || !existsSync(join(BASE, 'registry.json'))) {
   console.log(`base snapshot recorded: wall ${build(a, 'base-record', OUT, { EXP_RD_CACHE: BASE }).wall}s`)
 }
 
-const changes = (a.kind === 'vite' ? viteApp() : layerApp()).filter(c => !only || only.includes(c.name))
+const changes = edits[a.name](p => join(a.rootAbs, p)).filter(c => !only || only.includes(c.name))
 const tsv = join(OUT, 'summary.tsv')
-writeFileSync(tsv, 'change\tunits\tinc_wall\tclean_wall\treused(client/ssr/nitro)\trerun(client/ssr/nitro)\tverdict\n')
+writeFileSync(tsv, 'change\tinc_wall\tclean_wall\treused(client/ssr/nitro)\trerun(client/ssr/nitro)\tverdict\n')
 let mismatches = 0
 const walls = []
 for (const change of changes) {
@@ -148,7 +141,7 @@ for (const change of changes) {
   const reused = inc.stats.map(s => s.reused).join('/')
   const rerun = inc.stats.map(s => s.missing + s.changed + s.invalidated + s.excluded).join('/')
   const verdict = cmp.equal ? 'equal' : `MISMATCH ${cmp.text.split('\n')[0]}`
-  appendFileSync(tsv, [change.name, change.units, inc.wall.toFixed(1), ref.wall.toFixed(1), reused, rerun, verdict].join('\t') + '\n')
+  appendFileSync(tsv, [change.name, inc.wall.toFixed(1), ref.wall.toFixed(1), reused, rerun, verdict].join('\t') + '\n')
   walls.push(inc.wall)
   console.log(`${change.name.padEnd(22)} inc ${inc.wall.toFixed(1)}s (clean ${ref.wall.toFixed(1)}s) rerun ${rerun} ${verdict}`)
 }

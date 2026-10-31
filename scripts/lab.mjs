@@ -10,20 +10,16 @@ export const S = join(import.meta.dirname, '..')
 // Set by `node scripts/use-rolldown.mjs <fork>/packages/rolldown`.
 const FORK = 'rolldown-fork'
 
-// `root` is what restore and the tree hash cover; `cwd` is where the build runs; `output` is
-// what the check compares. `modulesYaml` stands in for the installed dependency tree.
-export const apps = {
-// `env` is set on every build of the app; `buildCacheEnv` turns on Nuxt's `experimental.buildCache`
-// (the "today" baseline); `buildCacheDir` is where Nuxt keeps it, removed before clean builds.
-  big3: { kind: 'nuxt', root: 'playgrounds/big3', cwd: 'playgrounds/big3/app', output: 'playgrounds/big3/app/.output', modulesYaml: 'node_modules/.modules.yaml', env: {}, buildCacheEnv: { EXP_BUILD_CACHE: '1' }, buildCacheDir: 'node_modules/.cache/nuxt' },
-  layers26: { kind: 'nuxt', root: 'playgrounds/layers26', cwd: 'playgrounds/layers26/app', output: 'playgrounds/layers26/app/.output', modulesYaml: 'node_modules/.modules.yaml', env: {}, buildCacheEnv: { EXP_BUILD_CACHE: '1' }, buildCacheDir: 'node_modules/.cache/nuxt' },
-  vite: { kind: 'vite', root: 'playgrounds/vite-app', cwd: 'playgrounds/vite-app', output: 'playgrounds/vite-app/dist', modulesYaml: 'node_modules/.modules.yaml', env: {}, buildCacheEnv: {}, buildCacheDir: null },
-}
+// Each app is a Nuxt app in playgrounds/<name>: restore and the tree hash cover that folder, the
+// build runs there and the check compares its .output. The workspace's .modules.yaml stands in for
+// the installed dependency tree. `EXP_BUILD_CACHE=1` turns on Nuxt's own `experimental.buildCache`
+// (the "today" baseline, see playgrounds/lab.ts).
+export const apps = ['dashboard', 'saas']
 
 export function app (name) {
-  const a = apps[name]
-  if (!a) throw new Error(`unknown app ${name}; known: ${Object.keys(apps).join(', ')}`)
-  return { name, ...a, rootAbs: join(S, a.root), cwdAbs: join(S, a.cwd), outputAbs: join(S, a.output), modulesYamlAbs: join(S, a.modulesYaml), buildCacheDirAbs: a.buildCacheDir && join(S, a.buildCacheDir) }
+  if (!apps.includes(name)) throw new Error(`unknown app ${name}; known: ${apps.join(', ')}`)
+  const root = `playgrounds/${name}`
+  return { name, root, rootAbs: join(S, root), cwdAbs: join(S, root), outputAbs: join(S, root, '.output'), modulesYamlAbs: join(S, 'node_modules/.modules.yaml'), env: {}, buildCacheEnv: { EXP_BUILD_CACHE: '1' } }
 }
 
 export const sh = (cmd, args, opts = {}) => execFileSync(cmd, args, { encoding: 'utf8', maxBuffer: 1 << 28, cwd: S, ...opts })
@@ -77,7 +73,7 @@ const RUNNER = process.env.LAB_RUNNER ? process.env.LAB_RUNNER.split(' ') : []
 /** One timed build. */
 export function build (a, label, outDir, env = {}) {
   const log = join(outDir, `${label}.log`)
-  const cmd = a.kind === 'vite' ? 'node_modules/.bin/vite build' : 'node_modules/.bin/nuxt build'
+  const cmd = 'node_modules/.bin/nuxt build'
   const [bin, ...pre] = [...RUNNER, 'bash']
   const r = spawnSync(bin, [...pre, '-c', `TIMEFORMAT='TIME %R %U %S'; time ${cmd}`], {
     cwd: a.cwdAbs, encoding: 'utf8', maxBuffer: 1 << 28,
