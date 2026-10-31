@@ -5,7 +5,7 @@
 //   `dir\0prefix`          the entries of `dir` named `prefix*`
 //   `path\0\0tsconfig`     a tsconfig by its content and that of every file it extends or references
 // A directory listing marks directories, and includes where each symlink finally leads and where
-// the directory really is, so replacing a file by a directory or retargeting a link (or one
+// the directory is, so replacing a file by a directory or retargeting a link (or one
 // further along its chain) changes the hash. A tsconfig that can't be read throws: the skip is
 // declined rather than trusting a chain it couldn't follow.
 import { createHash } from 'node:crypto'

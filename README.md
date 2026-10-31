@@ -4,7 +4,7 @@ Incremental production builds for Nuxt apps made of layers and modules. A build 
 
 It runs on a fork of [Rolldown](https://github.com/rolldown/rolldown) ([`onmax/rolldown`, branch `feat/layer-snapshot-v3`](https://github.com/onmax/rolldown/tree/feat/layer-snapshot-v3)) that builds on [rolldown#10159](https://github.com/rolldown/rolldown/pull/10159) (`experimental.buildCache`, by Christian Vuerings), plus small patches to Vite, plugin-vue, Nuxt and Nitro. Every patch is listed [below](#patches-by-project), one row each, so maintainers can read their own rows as separate issues.
 
-This is research code. Nothing here is published to npm, and the Rolldown fork has to be built from source.
+This is research code. Nothing here is published to npm, and the Rolldown fork has to be built from source. Coding agents wrote the code and these docs, and four of my skills cleaned them up: [`unslop`](https://github.com/onmax/skills/tree/main/skills/unslop) and [`emil-unslop-writing`](https://github.com/onmax/skills/tree/main/skills/emil-unslop-writing) for the prose, [`emil-unslop-code`](https://github.com/onmax/skills/tree/main/skills/emil-unslop-code) for the code, and [`emil-unslop-design`](https://github.com/onmax/skills/tree/main/skills/emil-unslop-design), which had nothing to check because there is no UI.
 
 ## Results
 
@@ -17,7 +17,7 @@ Median of 5 interleaved rounds (min–max), each build in a new process. "Today"
 | a production app: 17 Nuxt modules, 614 components | 10.5 s (10.4–10.6) | 8.8 s (8.7–8.9) | 1.2 | 10.5 s (10.4–10.8) | 5.3 s (5.2–5.5) | 2.0 |
 | plain Vite + Vue, 8 units, 1,206 components | 10.4 s (10.3–10.5) | 1.3 s (1.3–1.4) | 8.0 | 10.4 s (10.1–10.6) | 1.2 s (1.2–1.3) | 8.7 |
 
-big3, layers26 and the Vite app are generated (`playgrounds/gen-layers.mjs`, `playgrounds/gen-vite-app.mjs`) and live in `playgrounds/`. The production app is private, so it isn't here. It gains little because most of its time isn't bundling: with every environment skipped, a build still takes 5.3 s, nearly all of it Nuxt start-up and its 17 modules. That part isn't cached yet.
+big3, layers26 and the Vite app are generated (`playgrounds/gen-layers.mjs`, `playgrounds/gen-vite-app.mjs`) and live in `playgrounds/`. The production app is private, so it isn't here. It gains little because most of its time isn't bundling. With every environment skipped, a build still takes 5.3 s, nearly all of it Nuxt start-up and its 17 modules. That part isn't cached yet.
 
 Measured on 2026-10-31 on a 16-core Linux laptop that other jobs shared, so absolute times move between runs. Clean builds moved by up to 30% on the same day. Compare the ratios, which come from the same interleaved runs. The raw runs are what `pnpm bench` writes; the summary is [`docs/bench-2026-10-31.txt`](docs/bench-2026-10-31.txt).
 
@@ -63,7 +63,7 @@ It also handles the environment skip. The decision compares the files under the 
 
 ### The check
 
-[`scripts/check.mjs`](scripts/check.mjs) runs a list of edits (at the top of the file) against an app. Each edit is built twice, incrementally in a new process from the base snapshot, and clean with no snapshot. The two outputs must be the same. The corpus has 18 cases for each layer app and 9 for the Vite app: no edit at all, a template, a script, a style, a composable, a type file, a page, a server route, added and removed files, a component used across layers for the first time or no longer, a shared composable, a shared component, a layer overriding another's component, a layer config, an env var read through `define`, and a dependency bump.
+[`scripts/check.mjs`](scripts/check.mjs) runs a list of edits (at the top of the file) against an app. Each edit is built twice, incrementally in a new process from the base snapshot, and clean with no snapshot. The two outputs must be the same. The list has 18 cases for each layer app and 9 for the Vite app: no edit at all, a template, a script, a style, a composable, a type file, a page, a server route, added and removed files, a component used across layers for the first time or no longer, a shared composable, a shared component, a layer overriding another's component, a layer config, an env var read through `define`, and a dependency bump.
 
 "The same" means byte for byte after [`scripts/normdiff.mjs`](scripts/normdiff.mjs) removes the differences two clean builds of the same tree already show. Content hashes in file names are paired between the two trees, and every reference must map to the same file. Timestamps are dropped, along with the `mtime` and `etag` in Nitro's public-asset table. Two Nuxt files that are filled in module order are compared as sets. The generated type files are compared too. Each normalization is there because two clean builds differed without it, and the comparator's own tests are in `scripts/normdiff.test.mjs`.
 
