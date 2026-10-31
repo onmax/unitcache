@@ -1,0 +1,17 @@
+# pnpm bench --rounds 5 --configs today,ours on an idle 4-core Linux server: median (min-max) over 5 interleaved rounds.
+# wall = until the build process exits; saved = plus the wait for the background snapshot save; prep = copying the base snapshot before the build.
+=== dashboard (2026-11-01, commit 8a1ab8a)
+ours nochange          median 2.1s (2.1-2.1)  saved 2.1s (2.1-2.1)  prep 0.1s (0.1-0.1)  n=5
+ours edit              median 6.0s (5.9-6.0)  saved 6.0s (5.9-6.0)  prep 0.1s (0.1-0.1)  n=5
+today nochange         median 7.7s (7.5-7.9)  saved 7.7s (7.5-7.9)  prep 0.0s (0.0-0.0)  n=5
+today edit             median 10.6s (10.6-10.7)  saved 10.6s (10.6-10.7)  prep 0.0s (0.0-0.0)  n=5
+=== saas (2026-11-01, commit 8a1ab8a)
+ours nochange          median 6.7s (6.6-6.9)  saved 6.7s (6.6-6.9)  prep 0.1s (0.1-0.2)  n=5
+ours edit              median 12.4s (12.2-12.5)  saved 12.4s (12.2-12.5)  prep 0.1s (0.1-0.2)  n=5
+today nochange         median 15.3s (15.2-15.6)  saved 15.3s (15.2-15.6)  prep 0.0s (0.0-0.0)  n=5
+today edit             median 19.1s (18.8-19.5)  saved 19.1s (18.8-19.5)  prep 0.0s (0.0-0.0)  n=5
+=== production-app (2026-10-31, private app; earlier adapter copy)
+today edit             median 16.8s (16.6-17.2)
+ours edit              median 13.9s (13.8-14.2)
+today nochange         median 17.1s (16.6-17.3)
+ours nochange          median 8.1s (8.0-8.3)
