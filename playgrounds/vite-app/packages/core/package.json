@@ -1,0 +1,12 @@
+{
+  "name": "@va/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./*": "./src/*"
+  },
+  "dependencies": {
+    "@va/ui": "workspace:*"
+  }
+}

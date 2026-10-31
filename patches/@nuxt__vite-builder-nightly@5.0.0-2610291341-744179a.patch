@@ -1,0 +1,107 @@
+diff --git a/dist/index.mjs b/dist/index.mjs
+index d4ceef6..1d299f2 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -1,4 +1,5 @@
+ import { isBuiltin } from "node:module";
++import { createHash as __labCreateHash } from "node:crypto";
+ import fs, { existsSync, readFileSync, statSync } from "node:fs";
+ import { performance } from "node:perf_hooks";
+ import { createBuilder, createLogger, createServer, isCSSRequest, mergeConfig, resolveConfig, transformWithOxc } from "vite";
+@@ -1186,6 +1187,28 @@ function wrapStringGenerateScopedName(pattern, hashPrefix) {
+ 	});
+ 	return (localName, resourcePath) => generate(localName, resourcePath.replace(QUERY_RE$2, ""));
+ }
++function cachedResolve(ctx, id, source, importer) {
++	const structure = globalThis.__expStructureHash;
++	const meta = structure ? ctx.getModuleInfo(id)?.meta : void 0;
++	if (!meta) return ctx.resolve(source, importer);
++	if (meta.nuxtSsrStyleResolves?.structure !== structure) meta.nuxtSsrStyleResolves = { structure, ids: {} };
++	const ids = meta.nuxtSsrStyleResolves.ids;
++	const key = source + "\0" + (importer ?? "");
++	if (key in ids) return Promise.resolve(ids[key] === null ? null : { id: ids[key] });
++	return ctx.resolve(source, importer).then((resolved) => {
++		ids[key] = resolved ? resolved.id : null;
++		return resolved;
++	});
++}
++function cssImportSpecifiers(ctx, id, code) {
++	const meta = ctx.getModuleInfo(id)?.meta;
++	const key = __labCreateHash("sha1").update(code).digest("base64");
++	const cached = meta?.nuxtSsrStyleImports;
++	if (cached && cached.key === key) return cached.specifiers;
++	const specifiers = getStaticImportSpecifiers(ctx.parse(code)).filter((specifier) => IS_CSS_RE.test(specifier) || STYLE_QUERY_RE$1.test(specifier));
++	if (meta) meta.nuxtSsrStyleImports = { key, specifiers };
++	return specifiers;
++}
+ function SSRStylesPlugin(nuxt) {
+ 	if (nuxt.options.dev) return;
+ 	const envApi = !useServerBuild(nuxt).buildsSeparately;
+@@ -1408,8 +1431,8 @@ function SSRStylesPlugin(nuxt) {
+ 			if (isEntryModule && typeof options.shouldInline === "function" && !options.shouldInline(file)) continue;
+ 			if (emittedIds.has(file)) continue;
+ 			const fileInline = withInlineQuery(file);
+-			const resolved = await ctx.resolve(file) ?? await ctx.resolve(file, id);
+-			const res = await ctx.resolve(fileInline) ?? await ctx.resolve(fileInline, id);
++			const resolved = await cachedResolve(ctx, id, file) ?? await cachedResolve(ctx, id, file, id);
++			const res = await cachedResolve(ctx, id, fileInline) ?? await cachedResolve(ctx, id, fileInline, id);
+ 			if (!resolved || !res) {
+ 				if (!warnCache.has(file)) {
+ 					warnCache.add(file);
+@@ -1432,12 +1455,12 @@ function SSRStylesPlugin(nuxt) {
+ 			idMap.files.push(ref);
+ 		}
+ 		if (!SUPPORTED_FILES_RE.test(pathname) || STYLE_QUERY_RE$1.test(search) || isCSS(search)) return;
+-		for (const specifier of getStaticImportSpecifiers(ctx.parse(code))) {
++		for (const specifier of cssImportSpecifiers(ctx, id, code)) {
+ 			if (!IS_CSS_RE.test(specifier) && !STYLE_QUERY_RE$1.test(specifier)) continue;
+-			const resolved = await ctx.resolve(specifier, id);
++			const resolved = await cachedResolve(ctx, id, specifier, id);
+ 			if (!resolved) continue;
+ 			const resolvedIdInline = withInlineQuery(resolved.id);
+-			const res = await ctx.resolve(resolvedIdInline);
++			const res = await cachedResolve(ctx, id, resolvedIdInline);
+ 			if (!res) {
+ 				if (!warnCache.has(resolved.id)) {
+ 					warnCache.add(resolved.id);
+@@ -1586,6 +1609,7 @@ function SSRStylesPlugin(nuxt) {
+ 				},
+ 				async moduleParsed(info) {
+ 					if (environment.name !== "ssr") return;
++					if (info.code != null && !/\?.*macro=/.test(info.id) && !/\?.*nuxt_component=/.test(info.id)) await extractInlineStyles(this, info.id, info.code, true);
+ 					const importerId = stripQuery(info.id);
+ 					const imports = ssrImports.get(importerId) ?? /* @__PURE__ */ new Set();
+ 					ssrImports.set(importerId, imports);
+@@ -1645,7 +1669,7 @@ function SSRStylesPlugin(nuxt) {
+ 							}
+ 							return;
+ 						}
+-						await extractInlineStyles(this, id, code, true);
++						return;
+ 					}
+ 				}
+ 			};
+@@ -2018,6 +2042,7 @@ function ModulePreloadPolyfillPlugin() {
+ 	};
+ }
+ // src/plugins/stable-entry.ts
++const stableEntryByChunks = /* @__PURE__ */ new WeakMap();
+ function StableEntryPlugin(nuxt) {
+ 	let entryFileName;
+ 	let entryChunkFileName;
+@@ -2051,9 +2076,14 @@ function StableEntryPlugin(nuxt) {
+ 			return toArray(environment.config.build.rolldownOptions?.output).some((output) => typeof output?.entryFileNames === "string" && output?.entryFileNames.includes("[hash]"));
+ 		},
+ 		renderChunk(code, chunk, _options, meta) {
+-			const entry = Object.values(meta.chunks).find((chunk) => chunk.isEntry && chunk.name === "entry")?.fileName;
++			let entry = stableEntryByChunks.get(meta.chunks);
++			if (entry === void 0) {
++				entry = Object.values(meta.chunks).find((chunk) => chunk.isEntry && chunk.name === "entry")?.fileName ?? null;
++				stableEntryByChunks.set(meta.chunks, entry);
++			}
+ 			if (!entry || !chunk.imports.includes(entry)) return;
+ 			const filename = new RegExp(`(?<=['"])[\\./]*${escapeRegExp(basename(entry))}`, "g");
++			if (!_options.sourcemap) return code.replace(filename, "#entry");
+ 			const s = rolldownString(code, chunk.fileName);
+ 			s.replaceAll(filename, "#entry");
+ 			return generateTransform(s, chunk.fileName);

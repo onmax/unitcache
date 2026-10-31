@@ -1,0 +1,97 @@
+diff --git a/dist/node/chunks/node.js b/dist/node/chunks/node.js
+index 797794f..0d1de0f 100644
+--- a/dist/node/chunks/node.js
++++ b/dist/node/chunks/node.js
+@@ -30037,6 +30037,13 @@ function cssPostPlugin(config) {
+ 	}
+ 	return {
+ 		name: "vite:css-post",
++		buildEnd() {
++			for (const id of this.getModuleIds()) {
++				if (styles.has(id) || !CSS_LANGS_RE.test(id)) continue;
++				const css = this.getModuleInfo(id)?.meta?.viteCss;
++				if (typeof css === "string") styles.set(id, css);
++			}
++		},
+ 		renderStart() {
+ 			pureCssChunks = /* @__PURE__ */ new Set();
+ 			chunkCssReferences = /* @__PURE__ */ new Map();
+@@ -30100,6 +30107,7 @@ function cssPostPlugin(config) {
+ 					};
+ 				}
+ 				if (!inlined) styles.set(id, css);
++				const cssMeta = inlined ? void 0 : { viteCss: css };
+ 				let code;
+ 				if (modulesCode) code = modulesCode;
+ 				else if (inlined) {
+@@ -30111,19 +30119,20 @@ function cssPostPlugin(config) {
+ 					code,
+ 					map: { mappings: "" },
+ 					moduleSideEffects: modulesCode || inlined ? false : "no-treeshake",
+-					moduleType: "js"
++					moduleType: "js",
++					meta: cssMeta
+ 				};
+ 			}
+ 		},
+ 		...config.command === "build" ? {
+ 			async renderChunk(code, chunk, opts, meta) {
+ 				let chunkCSS;
+-				const renderedModules = new Proxy({}, { get(_target, p) {
+-					for (const name in meta.chunks) {
+-						const module = meta.chunks[name].modules[p];
+-						if (module) return module;
+-					}
+-				} });
++				let renderedModules = renderedModulesIndex.get(meta.chunks);
++				if (!renderedModules) {
++					renderedModules = Object.create(null);
++					for (const name in meta.chunks) for (const [id, module] of Object.entries(meta.chunks[name].modules)) if (!(id in renderedModules)) renderedModules[id] = module;
++					renderedModulesIndex.set(meta.chunks, renderedModules);
++				}
+ 				const isJsChunkEmpty = code === "" && !chunk.isEntry;
+ 				let isPureCssChunk = chunk.exports.length === 0;
+ 				const ids = Object.keys(chunk.modules);
+@@ -30392,6 +30401,7 @@ function cssAnalysisPlugin(config) {
+ 		}
+ 	};
+ }
++const renderedModulesIndex = /* @__PURE__ */ new WeakMap();
+ function isCssScopeToRendered(cssScopeTo, renderedModules) {
+ 	const [importerId, exp] = cssScopeTo;
+ 	const importer = renderedModules[importerId];
+@@ -31877,6 +31887,15 @@ function buildHtmlPlugin(config) {
+ 		applyToEnvironment(environment) {
+ 			return environment.config.isBundled;
+ 		},
++		buildEnd() {
++			for (const id of this.getModuleIds()) {
++				if (!id.endsWith(".html")) continue;
++				const normalized = normalizePath(id);
++				if (processedHtml(this).has(normalized)) continue;
++				const html = this.getModuleInfo(id)?.meta?.viteHtml;
++				if (typeof html === "string") processedHtml(this).set(normalized, html);
++			}
++		},
+ 		transform: {
+ 			filter: { id: /\.html$/ },
+ 			async handler(html, id) {
+@@ -32027,14 +32046,16 @@ function buildHtmlPlugin(config) {
+ 					const importExpression = `\nimport ${JSON.stringify(url)}`;
+ 					js = js.replace(importExpression, "");
+ 				} else s.remove(start, end);
+-				processedHtml(this).set(id, s.toString());
++				const processed = s.toString();
++				processedHtml(this).set(id, processed);
+ 				const { modulePreload } = this.environment.config.build;
+ 				if (modulePreload !== false && modulePreload.polyfill && (someScriptsAreAsync || someScriptsAreDefer)) js = `import "${modulePreloadPolyfillId}";\n${js}`;
+ 				await Promise.all(setModuleSideEffectPromises);
+ 				return {
+ 					code: js,
+ 					map: { mappings: "" },
+-					moduleSideEffects: "no-treeshake"
++					moduleSideEffects: "no-treeshake",
++					meta: { viteHtml: processed }
+ 				};
+ 			}
+ 		},

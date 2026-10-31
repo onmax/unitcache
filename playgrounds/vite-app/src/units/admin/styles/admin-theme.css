@@ -1,0 +1,14 @@
+.admin-theme { --admin-accent: #134777; --admin-gap: 2px; }
+.admin-theme h1 { color: var(--admin-accent); letter-spacing: .2px; }
+.admin-theme-r0 { margin: 11px 7px; border-left: 2px solid #631204; }
+.admin-theme-r1 { margin: 7px 11px; border-left: 3px solid #789378; }
+.admin-theme-r2 { margin: 7px 9px; border-left: 1px solid #624031; }
+.admin-theme-r3 { margin: 10px 9px; border-left: 2px solid #477836; }
+.admin-theme-r4 { margin: 4px 5px; border-left: 3px solid #397763; }
+.admin-theme-r5 { margin: 4px 1px; border-left: 3px solid #221416; }
+.admin-theme-r6 { margin: 0px 10px; border-left: 2px solid #628227; }
+.admin-theme-r7 { margin: 2px 11px; border-left: 1px solid #862990; }
+.admin-theme-r8 { margin: 1px 12px; border-left: 3px solid #802442; }
+.admin-theme-r9 { margin: 11px 7px; border-left: 1px solid #602351; }
+.admin-theme-r10 { margin: 1px 4px; border-left: 2px solid #198147; }
+.admin-theme-r11 { margin: 4px 1px; border-left: 3px solid #728364; }

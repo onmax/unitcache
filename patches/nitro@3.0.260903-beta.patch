@@ -1,0 +1,68 @@
+diff --git a/dist/_build/common.mjs b/dist/_build/common.mjs
+index 9891957..7791ce0 100644
+--- a/dist/_build/common.mjs
++++ b/dist/_build/common.mjs
+@@ -9870,6 +9870,16 @@ function externals(opts) {
+ 	});
+ 	const tracedPaths = /* @__PURE__ */ new Set();
+ 	const forcedTraceIncludes = new Set(resolved?.traceInclude);
++	const tracedImportersThisBuild = /* @__PURE__ */ new Set();
++	const rememberTraced = (ctx, importer, path) => {
++		const meta = importer ? ctx.getModuleInfo(importer)?.meta : void 0;
++		if (!meta) return;
++		if (!tracedImportersThisBuild.has(importer)) {
++			tracedImportersThisBuild.add(importer);
++			meta.nitroTracedPaths = [];
++		}
++		if (!meta.nitroTracedPaths.includes(path)) meta.nitroTracedPaths.push(path);
++	};
+ 	if (opts.trace && !resolved?.includePattern) return { name: PLUGIN_NAME };
+ 	return {
+ 		name: PLUGIN_NAME,
+@@ -9916,6 +9926,7 @@ function externals(opts) {
+ 						importId = guessed;
+ 					}
+ 					tracedPaths.add(resolvedPath);
++					rememberTraced(this, importer, resolvedPath);
+ 					return {
+ 						...resolved,
+ 						resolvedBy: PLUGIN_NAME,
+@@ -9934,6 +9945,7 @@ function externals(opts) {
+ 		buildEnd: {
+ 			order: "post",
+ 			async handler() {
++				if (opts.trace) for (const id of this.getModuleIds()) for (const p of this.getModuleInfo(id)?.meta?.nitroTracedPaths ?? []) tracedPaths.add(p);
+ 				if (!opts.trace || tracedPaths.size === 0 && forcedTraceIncludes.size === 0) return;
+ 				const { hooks: userHooks, ...traceOpts } = opts.trace;
+ 				const { traceNodeModules } = await import("nf3");
+diff --git a/dist/vite.mjs b/dist/vite.mjs
+index 851b1c1..1533d7a 100644
+--- a/dist/vite.mjs
++++ b/dist/vite.mjs
+@@ -6,7 +6,7 @@ import { createNitroEnvironment, createServiceEnvironment, createServiceEnvironm
+ import { startPreview } from "./_chunks/nitro4.mjs";
+ import { assetsPlugin } from "./_libs/js-tokens+pluginutils.mjs";
+ import { runtimeDir } from "nitro/meta";
+-import { existsSync } from "node:fs";
++import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+ import { defu } from "defu";
+ import { colors } from "consola/utils";
+@@ -186,7 +186,8 @@ function lazyService(loader) {
+ 
+ export const viteServices = {
+ ${serviceNames.map((name) => {
+-		return [name, resolve(ctx.nitro.options.buildDir, "vite/services", name, ctx._entryPoints[name])];
++		const entryFile = resolve(ctx.nitro.options.buildDir, "vite/services", name, ".nitro-entry");
++		return [name, resolve(ctx.nitro.options.buildDir, "vite/services", name, ctx._entryPoints[name] ?? (existsSync(entryFile) ? readFileSync(entryFile, "utf8") : ""))];
+ 	}).map(([name, entry]) => `[${JSON.stringify(name)}]: lazyService(() => import(${JSON.stringify(entry)}))`).join(",\n")}
+ };
+   `;
+@@ -372,6 +373,7 @@ function nitroMain(ctx) {
+ 			if (isRegisteredService) {
+ 				if (entryFile === void 0) this.error(`No entry point found for service "${this.environment.name}".`);
+ 				ctx._entryPoints[this.environment.name] = entryFile;
++				try { mkdirSync(resolve(ctx.nitro.options.buildDir, "vite/services", this.environment.name), { recursive: true }); writeFileSync(resolve(ctx.nitro.options.buildDir, "vite/services", this.environment.name, ".nitro-entry"), entryFile); } catch {}
+ 			}
+ 		} },
+ 		configureServer: async (server) => {

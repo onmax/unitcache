@@ -1,0 +1,12 @@
+{
+  "name": "unitcache-workspace",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.16.1",
+  "scripts": {
+    "use-rolldown": "node scripts/use-rolldown.mjs",
+    "check": "node scripts/check.mjs",
+    "bench": "node scripts/bench.mjs",
+    "test": "node scripts/dep-hash.test.mjs && node scripts/files.test.mjs && node scripts/normdiff.test.mjs && pnpm -r --filter ./packages/* test"
+  }
+}

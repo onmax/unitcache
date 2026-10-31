@@ -1,0 +1,1 @@
+{ "name": "rolldown-stock", "private": true, "dependencies": { "rolldown": "1.2.16" } }

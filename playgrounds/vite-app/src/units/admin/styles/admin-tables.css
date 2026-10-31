@@ -1,0 +1,14 @@
+.admin-tables { --admin-accent: #233998; --admin-gap: 11px; }
+.admin-tables h1 { color: var(--admin-accent); letter-spacing: .1px; }
+.admin-tables-r0 { margin: 9px 6px; border-left: 4px solid #883953; }
+.admin-tables-r1 { margin: 2px 6px; border-left: 2px solid #988102; }
+.admin-tables-r2 { margin: 5px 7px; border-left: 3px solid #768480; }
+.admin-tables-r3 { margin: 4px 12px; border-left: 4px solid #428771; }
+.admin-tables-r4 { margin: 5px 0px; border-left: 2px solid #483196; }
+.admin-tables-r5 { margin: 8px 2px; border-left: 2px solid #984399; }
+.admin-tables-r6 { margin: 1px 3px; border-left: 2px solid #420783; }
+.admin-tables-r7 { margin: 1px 5px; border-left: 1px solid #846612; }
+.admin-tables-r8 { margin: 2px 1px; border-left: 4px solid #550540; }
+.admin-tables-r9 { margin: 2px 1px; border-left: 3px solid #660496; }
+.admin-tables-r10 { margin: 1px 11px; border-left: 3px solid #331663; }
+.admin-tables-r11 { margin: 6px 10px; border-left: 3px solid #319888; }

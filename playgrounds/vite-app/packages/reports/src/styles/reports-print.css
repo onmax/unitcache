@@ -1,0 +1,14 @@
+.reports-print { --reports-accent: #779378; --reports-gap: 13px; }
+.reports-print h1 { color: var(--reports-accent); letter-spacing: .1px; }
+.reports-print-r0 { margin: 3px 8px; border-left: 4px solid #759984; }
+.reports-print-r1 { margin: 5px 2px; border-left: 2px solid #596809; }
+.reports-print-r2 { margin: 8px 6px; border-left: 1px solid #137167; }
+.reports-print-r3 { margin: 6px 3px; border-left: 4px solid #158280; }
+.reports-print-r4 { margin: 1px 8px; border-left: 2px solid #157245; }
+.reports-print-r5 { margin: 6px 0px; border-left: 4px solid #249784; }
+.reports-print-r6 { margin: 5px 10px; border-left: 2px solid #805667; }
+.reports-print-r7 { margin: 0px 7px; border-left: 1px solid #107674; }
+.reports-print-r8 { margin: 0px 12px; border-left: 2px solid #125344; }
+.reports-print-r9 { margin: 8px 6px; border-left: 3px solid #625492; }
+.reports-print-r10 { margin: 0px 0px; border-left: 4px solid #987196; }
+.reports-print-r11 { margin: 10px 0px; border-left: 1px solid #510727; }

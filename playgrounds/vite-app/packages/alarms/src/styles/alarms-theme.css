@@ -1,0 +1,14 @@
+.alarms-theme { --alarms-accent: #866314; --alarms-gap: 14px; }
+.alarms-theme h1 { color: var(--alarms-accent); letter-spacing: .4px; }
+.alarms-theme-r0 { margin: 10px 9px; border-left: 2px solid #392562; }
+.alarms-theme-r1 { margin: 0px 5px; border-left: 1px solid #938250; }
+.alarms-theme-r2 { margin: 1px 9px; border-left: 2px solid #289992; }
+.alarms-theme-r3 { margin: 8px 6px; border-left: 3px solid #129449; }
+.alarms-theme-r4 { margin: 2px 6px; border-left: 4px solid #245882; }
+.alarms-theme-r5 { margin: 7px 10px; border-left: 2px solid #893175; }
+.alarms-theme-r6 { margin: 2px 4px; border-left: 1px solid #452960; }
+.alarms-theme-r7 { margin: 0px 1px; border-left: 2px solid #551192; }
+.alarms-theme-r8 { margin: 6px 5px; border-left: 1px solid #794236; }
+.alarms-theme-r9 { margin: 12px 8px; border-left: 4px solid #124473; }
+.alarms-theme-r10 { margin: 12px 2px; border-left: 4px solid #503131; }
+.alarms-theme-r11 { margin: 7px 5px; border-left: 3px solid #907889; }

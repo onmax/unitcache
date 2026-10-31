@@ -1,0 +1,14 @@
+.reports-tables { --reports-accent: #587063; --reports-gap: 17px; }
+.reports-tables h1 { color: var(--reports-accent); letter-spacing: .9px; }
+.reports-tables-r0 { margin: 3px 12px; border-left: 4px solid #904903; }
+.reports-tables-r1 { margin: 3px 10px; border-left: 3px solid #551979; }
+.reports-tables-r2 { margin: 1px 8px; border-left: 4px solid #646117; }
+.reports-tables-r3 { margin: 12px 6px; border-left: 4px solid #786429; }
+.reports-tables-r4 { margin: 3px 11px; border-left: 1px solid #948868; }
+.reports-tables-r5 { margin: 12px 12px; border-left: 3px solid #193535; }
+.reports-tables-r6 { margin: 7px 8px; border-left: 2px solid #673218; }
+.reports-tables-r7 { margin: 7px 9px; border-left: 3px solid #911600; }
+.reports-tables-r8 { margin: 12px 6px; border-left: 1px solid #405892; }
+.reports-tables-r9 { margin: 3px 7px; border-left: 4px solid #363605; }
+.reports-tables-r10 { margin: 5px 10px; border-left: 1px solid #707447; }
+.reports-tables-r11 { margin: 7px 9px; border-left: 4px solid #312569; }

@@ -1,0 +1,12 @@
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 2d180a6..1ce85e1 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -1483,6 +1483,7 @@ async function genScriptCode(descriptor, options, pluginContext, ssr, customElem
+ 	let scriptCode = `const ${scriptIdentifier} = { ${isVaporMode(descriptor, options) ? "__vapor: true" : ""} }`;
+ 	let map;
+ 	const script = resolveScript(descriptor, options, ssr, customElement);
++	if (script?.deps) for (const dep of script.deps) pluginContext.addWatchFile(dep);
+ 	if (script) if (canInlineMain(descriptor, options)) {
+ 		if (!options.compiler.version) {
+ 			const userPlugins = options.script?.babelParserPlugins || [];

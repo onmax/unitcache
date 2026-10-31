@@ -1,0 +1,14 @@
+.alarms-print { --alarms-accent: #475212; --alarms-gap: 16px; }
+.alarms-print h1 { color: var(--alarms-accent); letter-spacing: .1px; }
+.alarms-print-r0 { margin: 11px 7px; border-left: 1px solid #498765; }
+.alarms-print-r1 { margin: 9px 11px; border-left: 3px solid #679411; }
+.alarms-print-r2 { margin: 4px 11px; border-left: 1px solid #884741; }
+.alarms-print-r3 { margin: 8px 6px; border-left: 4px solid #164919; }
+.alarms-print-r4 { margin: 5px 3px; border-left: 4px solid #483776; }
+.alarms-print-r5 { margin: 3px 6px; border-left: 1px solid #613041; }
+.alarms-print-r6 { margin: 6px 7px; border-left: 4px solid #482628; }
+.alarms-print-r7 { margin: 12px 12px; border-left: 1px solid #311310; }
+.alarms-print-r8 { margin: 4px 12px; border-left: 2px solid #310823; }
+.alarms-print-r9 { margin: 7px 0px; border-left: 4px solid #553186; }
+.alarms-print-r10 { margin: 11px 5px; border-left: 1px solid #416599; }
+.alarms-print-r11 { margin: 6px 6px; border-left: 1px solid #767672; }

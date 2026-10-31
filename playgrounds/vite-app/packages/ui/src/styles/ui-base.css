@@ -1,0 +1,14 @@
+.ui-base { --ui-accent: #837507; --ui-gap: 8px; }
+.ui-base h1 { color: var(--ui-accent); letter-spacing: .8px; }
+.ui-base-r0 { margin: 10px 2px; border-left: 4px solid #336974; }
+.ui-base-r1 { margin: 9px 4px; border-left: 2px solid #959159; }
+.ui-base-r2 { margin: 10px 2px; border-left: 2px solid #608833; }
+.ui-base-r3 { margin: 4px 5px; border-left: 1px solid #585246; }
+.ui-base-r4 { margin: 1px 1px; border-left: 1px solid #328544; }
+.ui-base-r5 { margin: 7px 11px; border-left: 3px solid #945438; }
+.ui-base-r6 { margin: 2px 1px; border-left: 2px solid #744889; }
+.ui-base-r7 { margin: 5px 3px; border-left: 2px solid #910469; }
+.ui-base-r8 { margin: 0px 7px; border-left: 1px solid #431123; }
+.ui-base-r9 { margin: 7px 8px; border-left: 3px solid #393952; }
+.ui-base-r10 { margin: 0px 0px; border-left: 1px solid #657931; }
+.ui-base-r11 { margin: 10px 0px; border-left: 4px solid #190984; }
