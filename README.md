@@ -72,7 +72,7 @@ It also handles the environment skip. The decision compares the files under the 
 
 "The same" means byte for byte after [`scripts/normdiff.mjs`](scripts/normdiff.mjs) removes the differences two clean builds of the same tree already show. Content hashes in file names are paired between the two trees, and every reference must map to the same file. Timestamps are dropped, along with the `mtime` and `etag` in Nitro's public-asset table and the prerender time Nuxt writes into each prerendered page. Two Nuxt files that are filled in module order are compared as sets. The generated type files are compared too. Each normalization is there because two clean builds differed without it, and the comparator's own tests are in `scripts/normdiff.test.mjs`.
 
-On the last full check all 27 cases passed. It found the bugs fixed in N5 and O1, and the content edits that re-ran every module.
+On the last full check all 27 cases passed. It found the bugs fixed in N5 and O1, and the content edits that re-ran every module. Nuxt's own `experimental.buildCache` has the opposite problem: it reuses the old build after a content edit ([nuxt#36797](https://github.com/nuxt/nuxt/issues/36797)).
 
 ## Patches by project
 
@@ -114,13 +114,13 @@ Each row is one problem and one change. The patch files are what `pnpm install` 
 | N2 | With N1, `ssr-styles` parses every component's CSS imports and resolves each one again on every build, about 1,600 `this.resolve` round trips per SSR build of the generated app. | Keep the import list in `meta` keyed on a hash of the code, and the resolutions while no file was added or removed. | same file |
 | N3 | `nuxt:stable-entry` searches `meta.chunks` for the entry once per chunk, and runs magic-string and a sourcemap per chunk even without output sourcemaps. | Find the entry once; skip the sourcemap when there is none. | same file |
 | N4 | `nuxt:vite-public-dir-resolution`'s `renderChunk` returns at once unless the code has a `url(/…)`, and `nuxt:ssr-styles:client`'s `moduleParsed` returns at once outside SSR. Both cost a call into JS per chunk or module. | A code filter on the first, no `moduleParsed` on the second. | adapter: [`adapter/hook-filters.ts`](adapter/hook-filters.ts) |
-| N5 | `paths.mjs` imports `ufo` by its absolute path. In the SSR build `nuxt:resolve-externals` makes every other import of `ufo` external, but this one resolves to a module. Rolldown keeps whichever resolution of the file comes first, so the SSR output depends on the order modules load: a build from the snapshot bundles `ufo`, a clean one doesn't. | Resolve an absolute import of a package's entry the way the bare import resolves. | same file |
+| N5 | `paths.mjs` imports `ufo` by its absolute path. In the SSR build `nuxt:resolve-externals` makes every other import of `ufo` external, but this one resolves to a module. Rolldown keeps whichever resolution of the file comes first, so the SSR output depends on the order modules load: a build from the snapshot bundles `ufo`, a clean one doesn't. Stock Nuxt has it too when some transforms are slower ([nuxt#36795](https://github.com/nuxt/nuxt/issues/36795), [rolldown#11417](https://github.com/rolldown/rolldown/issues/11417)). | Resolve an absolute import of a package's entry the way the bare import resolves. | same file |
 
 ### nuxt-og-image
 
 | # | problem | fix | where |
 |---|---|---|---|
-| O1 | OG image components get inline styles from the app config's colors and the Tailwind CSS file, read while transforming the component but not declared. A reused component keeps the old colors after `app.config.ts` changes. | `this.addWatchFile` the app config files and the CSS file. | [`patches/nuxt-og-image@7.0.7.patch`](patches/nuxt-og-image@7.0.7.patch) |
+| O1 | OG image components get inline styles from the app config's colors and the Tailwind CSS file, read while transforming the component but not declared. A reused component keeps the old colors after `app.config.ts` changes. Stock users see the same in `nuxt dev` and with og-image's own `buildCache`; a fuller fix is on [`onmax/og-image`](https://github.com/onmax/og-image/tree/fix/og-image-style-inputs). | `this.addWatchFile` the app config files and the CSS file. | [`patches/nuxt-og-image@7.0.7.patch`](patches/nuxt-og-image@7.0.7.patch) |
 
 ### Nitro
 
